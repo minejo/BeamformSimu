@@ -2,7 +2,7 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-function  [small_l, small_w, small_v] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam, map_l, map_w, map)
+function  [small_l, small_w, small_v,smallBeamPos_l,smallBeamPos_w] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam, map_l, map_w, map)
 %在大波束中定位小波束的具体位置
 [x,y] = size(map);
 y_t = 1:y;
