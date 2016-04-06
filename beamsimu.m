@@ -52,32 +52,32 @@ Rw = [];
 V = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %大波束顺序扫描
-for i = 1: length(t)
-    [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
-    PREL = [PREL (RL_pre+0.5)*map_l];
-    PREW = [PREW (RW_pre+0.5)*map_w];
-    
-    %在单个大波束内查找有没有物体
-    [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
-    
-    beamPos_l = beamPos_l + 1;
-    if(beamPos_l > num_l)
-        beamPos_w = beamPos_w + 1;
-        beamPos_l = 1;
-    end
-    
-    if beamPos_w > num_w
-        beamPos_w = 1;
-        beamPos_l = 1;
-    end
-    
-    if(hasObject)
-        i
-        Rl = [Rl L];
-        Rw = [Rw W];
-        V = [V vv];
-    end
-end
+% for i = 1: length(t)
+%     [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
+%     PREL = [PREL (RL_pre+0.5)*map_l];
+%     PREW = [PREW (RW_pre+0.5)*map_w];
+%     
+%     %在单个大波束内查找有没有物体
+%     [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
+%     
+%     beamPos_l = beamPos_l + 1;
+%     if(beamPos_l > num_l)
+%         beamPos_w = beamPos_w + 1;
+%         beamPos_l = 1;
+%     end
+%     
+%     if beamPos_w > num_w
+%         beamPos_w = 1;
+%         beamPos_l = 1;
+%     end
+%     
+%     if(hasObject)
+%         i
+%         Rl = [Rl L];
+%         Rw = [Rw W];
+%         V = [V vv];
+%     end
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %波束跟踪方案
 RL_pre = R0_l/map_l;%map更新时对应的上一时刻的值
@@ -88,12 +88,15 @@ Trl = [];
 Trw = [];
 for i = 1: length(t)
     [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
-    
+    PREL = [PREL (RL_pre+0.5)*map_l];
+    PREW = [PREW (RW_pre+0.5)*map_w];
     %在单个大波束内查找有没有物体
     [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
     if(hasObject)
         %如果有，在大波束内定位到具体的小波束，可以利用的信息是距离信息
-        [small_l, small_w ,small_v] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam,map_l,map_w);
+        [small_l, small_w ,small_v] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam,map_l,map_w,map);
+        Trl = [Trl small_l];
+        Trw = [Trw small_w];
     else
         beamPos_l = beamPos_l + 1;
         if(beamPos_l > num_l)
@@ -116,5 +119,5 @@ end
 figure;
 plot(PREL,PREW);%理论曲线
 hold on;
-plot(Rl,Rw,'r');
+plot(Trl,Trw,'r');
 
