@@ -13,7 +13,7 @@ map_width = 40;%探测区域宽度
 %设定波束细节
 T1 = 0.0037; %单波束驻留时间，波束切换时间不考虑
 allow_T = 1.5; %跟踪扫描时全局容忍空白时间
-big_beam = 3; %大波束的正方形边长
+big_beam = 4; %大波束的正方形边长
 small_beam = 0.3; %小波束正方形边长
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
 t = 0:T1:7*T_b;
@@ -44,20 +44,24 @@ RW_pre = R0_w/map_w;
 PREL = [];
 PREW = [];
 %%
-%波束跟踪方案
+%大波束扫描方案
 beamPos_w = 1;
 beamPos_l = 1;%波束的位置
 Rl = [];
 Rw = [];
 V = [];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%大波束顺序扫描
 for i = 1: length(t)
     [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     PREL = [PREL (RL_pre+0.5)*map_l];
     PREW = [PREW (RW_pre+0.5)*map_w];
     
-     [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
-     beamPos_l = beamPos_l + 1;
-     if(beamPos_l > num_l)
+    %在单个大波束内查找有没有物体
+    [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
+    
+    beamPos_l = beamPos_l + 1;
+    if(beamPos_l > num_l)
         beamPos_w = beamPos_w + 1;
         beamPos_l = 1;
     end
@@ -65,14 +69,47 @@ for i = 1: length(t)
     if beamPos_w > num_w
         beamPos_w = 1;
         beamPos_l = 1;
-    end 
+    end
     
     if(hasObject)
         i
         Rl = [Rl L];
         Rw = [Rw W];
+        V = [V vv];
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%波束跟踪方案
+RL_pre = R0_l/map_l;%map更新时对应的上一时刻的值
+RW_pre = R0_w/map_w;
+beamPos_w = 1;
+beamPos_l = 1;%波束的位置
+Trl = [];
+Trw = [];
+for i = 1: length(t)
+    [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
+    
+    %在单个大波束内查找有没有物体
+    [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
+    if(hasObject)
+        %如果有，在大波束内定位到具体的小波束，可以利用的信息是距离信息
+        [small_l, small_w ,small_v] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam,map_l,map_w);
+    else
+        beamPos_l = beamPos_l + 1;
+        if(beamPos_l > num_l)
+            beamPos_w = beamPos_w + 1;
+            beamPos_l = 1;
+        end
+        
+        if beamPos_w > num_w
+            beamPos_w = 1;
+            beamPos_l = 1;
+        end
+    end
+    
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%
 %结果对比
