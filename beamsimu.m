@@ -127,7 +127,8 @@ for i = 1: length(t)
             beamPos_l = 1;%重新初始化大波束的位置
         else
             %获取跟踪扫描窗
-            
+            [scan_window_l scan_window_w] = getScanWindow(smallBeamPos_l, smallBeamPos_w,map_l,map_w,small_v);
+        end
     end
     
 end
