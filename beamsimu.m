@@ -14,7 +14,7 @@ map_width = 50;%探测区域宽度
 T1 = 0.0037; %单波束驻留时间，波束切换时间不考虑
 allow_T = 1.5; %跟踪扫描时全局容忍空白时间
 big_beam = 4; %大波束的正方形边长
-small_beam = 1; %小波束正方形边长
+small_beam = 0.5; %小波束正方形边长
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
 t = 0:T1:8*T_b;
 num_l = map_length / big_beam; %大波束横轴扫描次数
@@ -26,13 +26,13 @@ map_w = 0.01;
 map=ones(map_length/map_l, map_width/map_w)*(-1); %初始map数组，初始化为-1
 %运动模型设置
 R0_l = 10; %横轴初始距离
-v0_l = 4; %横轴初始速度
-a0_l = 1; %横轴加速度
+v0_l = 0; %横轴初始速度
+a0_l = 2; %横轴加速度
 
 R0l = R0_l + v0_l .* t + 0.5 * a0_l .* t.^2; %实时横坐标
 
 R0_w=5; %纵轴初始距离
-v0_w=6; %纵轴初始速度
+v0_w=3; %纵轴初始速度
 a0_w=1;  %纵轴加速度
 v = v0_w + a0_w.*t;
 
@@ -140,6 +140,7 @@ for i = 1: length(t)
             fprintf('当前时间%.4f,超过容忍时间，退出跟踪模式，重新用大波束进行全局扫描\n',i*T1);
             disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
             track_flag = 0;
+            track_ing_flag = 0;
             beamPos_w = 1;
             beamPos_l = 1;%重新初始化大波束的位置
         else
