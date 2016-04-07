@@ -7,16 +7,16 @@ clear all
 close all
 %%
 %场景模型设置
-map_length = 50;%探测区域长度
-map_width = 40;%探测区域宽度
+map_length = 80;%探测区域长度
+map_width = 50;%探测区域宽度
 %%
 %设定波束细节
 T1 = 0.0037; %单波束驻留时间，波束切换时间不考虑
 allow_T = 1.5; %跟踪扫描时全局容忍空白时间
-big_beam = 5; %大波束的正方形边长
-small_beam = 0.3; %小波束正方形边长
+big_beam = 4; %大波束的正方形边长
+small_beam = 1; %小波束正方形边长
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
-t = 0:T1:7*T_b;
+t = 0:T1:8*T_b;
 num_l = map_length / big_beam; %大波束横轴扫描次数
 num_w = map_width / big_beam;%大波束纵轴扫描次数
 %%
@@ -27,13 +27,13 @@ map=ones(map_length/map_l, map_width/map_w)*(-1); %初始map数组，初始化为-1
 %运动模型设置
 R0_l = 10; %横轴初始距离
 v0_l = 4; %横轴初始速度
-a0_l = 0; %横轴加速度
+a0_l = 1; %横轴加速度
 
 R0l = R0_l + v0_l .* t + 0.5 * a0_l .* t.^2; %实时横坐标
 
 R0_w=5; %纵轴初始距离
-v0_w=10; %纵轴初始速度
-a0_w=0;  %纵轴加速度
+v0_w=6; %纵轴初始速度
+a0_w=1;  %纵轴加速度
 v = v0_w + a0_w.*t;
 
 R0w = R0_w + v0_w .* t + 0.5 * a0_w .* t.^2;  %实时纵坐标
@@ -43,41 +43,48 @@ RL_pre = R0_l/map_l;%map更新时对应的上一时刻的值
 RW_pre = R0_w/map_w;
 PREL = [];
 PREW = [];
+
+[map_x map_y] = size(map);
+max_small_pos_l = map_x/(small_beam/map_l);
+max_small_pos_w = map_y/(small_beam/map_w);
 %%
 %大波束扫描方案
-% beamPos_w = 1;
-% beamPos_l = 1;%波束的位置
-% Rl = [];
-% Rw = [];
-% V = [];
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %大波束顺序扫描
-% for i = 1: length(t)
-%     [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
-%     PREL = [PREL (RL_pre+0.5)*map_l];
-%     PREW = [PREW (RW_pre+0.5)*map_w];
-%
-%     %在单个大波束内查找有没有物体
-%     [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
-%
-%     beamPos_l = beamPos_l + 1;
-%     if(beamPos_l > num_l)
-%         beamPos_w = beamPos_w + 1;
-%         beamPos_l = 1;
-%     end
-%
-%     if beamPos_w > num_w
-%         beamPos_w = 1;
-%         beamPos_l = 1;
-%     end
-%
-%     if(hasObject)
-%         i
-%         Rl = [Rl L];
-%         Rw = [Rw W];
-%         V = [V vv];
-%     end
-% end
+beamPos_w = 1;
+beamPos_l = 1;%波束的位置
+Rl = [];
+Rw = [];
+V = [];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%大波束顺序扫描
+fprintf('大波束扫描方案\n');
+for i = 1: length(t)
+    if(R0l(i)<=map_length && R0w(i) <= map_width)
+    [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
+    end
+    PREL = [PREL (RL_pre+0.5)*map_l];
+    PREW = [PREW (RW_pre+0.5)*map_w];
+
+    %在单个大波束内查找有没有物体
+    [hasObject, L, W, vv,map_index_w] = bigBeamFindObject(beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
+
+    beamPos_l = beamPos_l + 1;
+    if(beamPos_l > num_l)
+        beamPos_w = beamPos_w + 1;
+        beamPos_l = 1;
+    end
+
+    if beamPos_w > num_w
+        beamPos_w = 1;
+        beamPos_l = 1;
+    end
+
+    if(hasObject)
+     fprintf('大波束(%d,%d)扫描时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l ,beamPos_w,L,W,vv);
+        Rl = [Rl L];
+        Rw = [Rw W];
+        V = [V vv];
+    end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %波束跟踪方案
 RL_pre = R0_l/map_l;%map更新时对应的上一时刻的值
@@ -91,25 +98,30 @@ s_track_time = -1;%设置初始化跟踪时间为-1
 track_flag = 0; %设置为1时即开启跟踪模式
 track_ing_flag = 0;%是否需要继续跟踪还是重设设立参考窗，设置为0为设立参考窗
 for i = 1: length(t)
+    if(R0l(i)<=map_length && R0w(i) <= map_width)
     [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
-    PREL = [PREL (RL_pre+0.5)*map_l];
-    PREW = [PREW (RW_pre+0.5)*map_w];
+    end
+    %PREL = [PREL (RL_pre+0.5)*map_l];
+    %PREW = [PREW (RW_pre+0.5)*map_w];
     if(~track_flag)
         %在单个大波束内查找有没有物体
-        [hasObject, L, W, vv] = bigBeamFindObject(map_length, map_width, beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
+        [hasObject, L, W, vv,map_index_w] = bigBeamFindObject(beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
         if(hasObject)
+            %big_map = getBigMap(beamPos_l, beamPos_w, big_beam,map,map_l,map_w);
             fprintf('大波束扫描时发现目标(%.4f, %.4f),速度为%.4f\n', L,W,vv);
             %如果有，在大波束内定位到具体的小波束，可以利用的信息是距离信息
-            [small_l, small_w ,small_v,smallBeamPos_l,smallBeamPos_w] = findFromBigBeam(beamPos_l, beamPos_w, W, small_beam, big_beam,map_l,map_w,map);
+            [foundObject,small_l, small_w ,small_v,smallBeamPos_l,smallBeamPos_w] = findFromBigBeam(beamPos_l, map_index_w, small_beam, big_beam,map_l,map_w,map);
             fprintf('在大波束用小波束具体定位物体，结果为：目标(%.4f, %.4f),速度为%.4f\n', small_l,small_w,small_v);
             Trl = [Trl small_l];
             Trw = [Trw small_w];
             Trv = [Trv small_v];
             %obj_num = length(small_l);%一个区域内物体的数目
             %启用波束跟踪方案
+            if foundObject
             fprintf('启用波束跟踪方案,当前时间为%.4f\n', i*T1);
             s_track_time = i; %开始跟踪的时间序号
             track_flag = 1;
+            end
         else
             beamPos_l = beamPos_l + 1;
             if(beamPos_l > num_l)
@@ -134,16 +146,20 @@ for i = 1: length(t)
             if(~track_ing_flag)
                 %获取跟踪扫描窗
                 fprintf('获取跟踪扫描窗');
-                [scan_window_l scan_window_w] = getScanWindow(smallBeamPos_l, smallBeamPos_w,map_w,small_v,T1);
+                [scan_window_l ,scan_window_w] = getScanWindow(smallBeamPos_l, smallBeamPos_w,max_small_pos_l,max_small_pos_w,map_w,small_v,T1);
                 k=1; %扫描窗的定位序列
                 track_ing_flag=1;
                 window_num = length(scan_window_l);%扫描窗数目
-                fprintf(' 跟踪扫描窗长度为%d\n', window_num);
-                fprintf('小波束跟踪中\n');
+                fprintf(' 跟踪扫描窗长度为%d\n扫描窗为：', window_num);
+                for p = 1: window_num
+                    fprintf('(%d,%d)',scan_window_l(p),scan_window_w(p));
+                end
+                 fprintf('\n');
+                fprintf('小波束跟踪中,当前时间%.4f\n',i*T1);
             end
             
             
-            
+            fprintf('小波束(%d,%d)扫描中...\n',scan_window_l(k),scan_window_w(k));
             [hasObject, L, W, V] = smallBeamFindObject(scan_window_l(k), scan_window_w(k), map, small_beam, map_l, map_w);
             if(hasObject)
                 Trl = [Trl L];
@@ -170,4 +186,6 @@ end
 figure;
 plot(PREL,PREW);%理论曲线
 hold on;
+plot(Rl,Rw,'g');
+hold on
 plot(Trl,Trw,'r');
