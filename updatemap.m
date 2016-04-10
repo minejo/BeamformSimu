@@ -10,6 +10,12 @@ y_t=1:y;
 map(RL_pre,RW_pre)=-1;
 RL=find(x_t<=R0l/map_l, 1, 'last' );
 RW=find(y_t<=R0w/map_w, 1, 'last' );
+if isempty(RL)
+    RL = 1;
+end
+if isempty(RW)
+    RW = 1;
+end
 map(RL,RW)=abs(v0_w);
 RL_pre=RL;
 RW_pre=RW;

@@ -1,0 +1,31 @@
+SMART-SCANNING
+   is_track = 0
+   tracking_find_object = 0
+   hasObject = 0
+   tracking_find_object = 0
+   while Scanning
+       if is_track = 0
+          then while hasObject = 0
+              update bigBeamPosition
+              hasObject = big_Beam_Find_Object(Big_Beam_Position)
+          is_track = 1
+          tracking_find_object = 1
+          [small_Beam_Position,Object_Velocity] = find_From_Big_Beam(Big_Beam_Position)
+       else
+          if tracking time >= allow_Tracking_Time
+              then track_flag = 0
+                   tracking_find_object = 0
+          else
+              if tracking_find_object = 1
+                  then window = GET-SCAN-WINDOW(small_Beam_Position, Object_Velocity)
+                       tracking_find_object = 0
+              while tracking_hasObject = 0
+                  small_Beam_Position = Dequeue(window)
+                  [tracking_hasObject,Object_Velocity] = small_Beam_Find_Object(small_Beam_Position)
+
+
+GET-SCAN-WINDOW(small_Beam_Position, Object_Velocity)
+    Scan_Radius = Object_Velocity * Interval Time of Beamforming
+    window = set up a rectangular scanning window with a radius of Scan_Radius, starting from
+             the direction of motion
+    return window
