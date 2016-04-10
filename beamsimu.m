@@ -26,8 +26,8 @@ map_w = 0.01;
 map=ones(map_length/map_l, map_width/map_w)*(-1); %初始map数组，初始化为-1
 %运动模型设置
 R0_l = 1; %横轴初始距离
-v0_l = 0; %横轴初始速度
-a0_l = 10; %横轴加速度
+v0_l = 3; %横轴初始速度
+a0_l = 0; %横轴加速度
 
 R0l = R0_l + v0_l .* t + 0.5 * a0_l .* t.^2; %实时横坐标
 
@@ -62,31 +62,31 @@ V = [];
 fprintf('大波束扫描方案\n');
 for i = 1: length(t)
     if(R0l(i)<=map_length && R0w(i) <= map_width && R0l(i)>0 && R0w(i) >0 )
-    [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map    
+        [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     end
     
     if(RL_pre && RW_pre && RL_pre<= (map_length/map_l) && RW_pre <= (map_width/map_w) && RL_pre>0 && RW_pre >0 )
-    PREL = [PREL (RL_pre+0.5)*map_l];
-    PREW = [PREW (RW_pre+0.5)*map_w];
+        PREL = [PREL (RL_pre+0.5)*map_l];
+        PREW = [PREW (RW_pre+0.5)*map_w];
     end
     
-
+    
     %在单个大波束内查找有没有物体
     [hasObject, L, W, vv,map_index_w] = bigBeamFindObject(beamPos_w, beamPos_l,map,big_beam, map_l,map_w);
-
+    
     beamPos_l = beamPos_l + 1;
     if(beamPos_l > num_l)
         beamPos_w = beamPos_w + 1;
         beamPos_l = 1;
     end
-
+    
     if beamPos_w > num_w
         beamPos_w = 1;
         beamPos_l = 1;
     end
-
+    
     if(hasObject)
-     fprintf('大波束(%d,%d)扫描时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l ,beamPos_w,L,W,vv);
+        fprintf('大波束(%d,%d)扫描时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l ,beamPos_w,L,W,vv);
         Rl = [Rl L];
         Rw = [Rw W];
         V = [V vv];
@@ -107,7 +107,7 @@ track_ing_flag = 0;%是否需要继续跟踪还是重设设立参考窗，设置为0为设立参考窗
 map = init_map;
 for i = 1: length(t)
     if(R0l(i)<=map_length && R0w(i) <= map_width && R0l(i)>0 && R0w(i) >0 )
-    [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
+        [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     end
     %PREL = [PREL (RL_pre+0.5)*map_l];
     %PREW = [PREW (RW_pre+0.5)*map_w];
@@ -126,9 +126,9 @@ for i = 1: length(t)
             %obj_num = length(small_l);%一个区域内物体的数目
             %启用波束跟踪方案
             if foundObject
-            fprintf('启用波束跟踪方案,当前时间为%.4f\n', i*T1);
-            s_track_time = i; %开始跟踪的时间序号
-            track_flag = 1;
+                fprintf('启用波束跟踪方案,当前时间为%.4f\n', i*T1);
+                s_track_time = i; %开始跟踪的时间序号
+                track_flag = 1;
             end
         else
             beamPos_l = beamPos_l + 1;
@@ -136,7 +136,7 @@ for i = 1: length(t)
                 beamPos_w = beamPos_w + 1;
                 beamPos_l = 1;
             end
-
+            
             if beamPos_w > num_w
                 beamPos_w = 1;
                 beamPos_l = 1;
@@ -163,11 +163,11 @@ for i = 1: length(t)
                 for p = 1: window_num
                     fprintf('(%d,%d)',scan_window_l(p),scan_window_w(p));
                 end
-                 fprintf('\n');
+                fprintf('\n');
                 fprintf('小波束跟踪中,当前时间%.4f\n',i*T1);
             end
-
-
+            
+            
             fprintf('小波束(%d,%d)扫描中...\n',scan_window_l(k),scan_window_w(k));
             [hasObject, L, W, V] = smallBeamFindObject(scan_window_l(k), scan_window_w(k), map, small_beam, map_l, map_w);
             if(hasObject)
@@ -182,7 +182,7 @@ for i = 1: length(t)
                 k=k+1;
                 if(k>window_num)
                     k=1;
-                     track_flag = 0;
+                    track_flag = 0;
                     track_ing_flag = 0;
                     fprintf('小波束目标跟踪丢失，重新进行全局扫描\n');
                 end
