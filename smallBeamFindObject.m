@@ -13,7 +13,7 @@ for i = 1 : small_num_l
     for j = 1 : small_num_w
         index_l = fix((smallBeamPos_l - 1)*small_beam/map_l + i);
         index_w = fix((smallBeamPos_w -1)*small_beam/map_w + j);
-        if(map(index_l,index_w) > -1)
+        if(map(index_l,index_w) ~= 0)
             hasObject = 1;
             L = (smallBeamPos_l-1)*small_beam + 0.5*small_beam;
             W = index_w*map_w;

@@ -2,11 +2,14 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-function [scan_window_l scan_window_w] = getScanWindow(BeamPos_l, BeamPos_w,max_pos_l,max_pos_w,map_w, beam_radius,v, T1)
+function [scan_window_l scan_window_w] = getScanWindow(BeamPos_l, BeamPos_w,max_pos_l,max_pos_w,map_w, beam_radius,v, T1,time_delay)
 %确定跟踪扫描的扫描窗，本次仿真只考虑单目标情况
 scan_window_l = BeamPos_l;
 scan_window_w = BeamPos_w;
-scan_radius = fix((v * T1/map_w)/beam_radius); %扫描窗的半径
+scan_radius = fix((abs(v) * (T1+time_delay)/map_w)/beam_radius); %扫描窗的半径
+if(scan_radius == 0)
+    scan_radius = 1;
+end
 
 
 %优先在物体运动方向搜寻
