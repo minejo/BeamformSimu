@@ -2,7 +2,7 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 %智能扫描方案
-function [TRACK_L,TRACK_W] = smartbeam(R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
+function [TRACK_L,TRACK_W,Global_count] = smartbeam(R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
 %%
 %场景模型设置
 map_length = 80;%探测区域长度
@@ -71,8 +71,8 @@ for i = 1:length(t)
         [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     end
     if(RL_pre && RW_pre && RL_pre<= (map_length/map_l) && RW_pre <= (map_width/map_w) && RL_pre>0 && RW_pre >0 )
-    PREL = [PREL (RL_pre+0.5)*map_l];
-    PREW = [PREW (RW_pre+0.5)*map_w];
+        PREL = [PREL (RL_pre+0.5)*map_l];
+        PREW = [PREW (RW_pre+0.5)*map_w];
     end
     if(~track_flag)
         %全局扫描
@@ -168,7 +168,13 @@ for i = 1:length(t)
                     big_beam_track_flag = 0;
                     %大波束定位小波束参数初始化
                     big_find_small_object = 1;%大波束定位小波束物体序号
-                    big_find_small_window = 1;%大波束定位小波束窗口序号
+                    if(Big_Objects{big_find_small_object}(3) > 0)
+                        big_find_small_window = 1;%大波束定位小波束窗口序号
+                        update_unit = 1;
+                    else
+                        big_find_small_window = big_has_small_num;
+                        update_unit = -1;
+                    end
                     Small_Objects = cell(1, object_num);%存储从大波束中获取的小波束的物体
                 end
             else
@@ -190,18 +196,29 @@ for i = 1:length(t)
                             fprintf('大波束（%d,%d)定位到小波束(%d,%d)，发现目标(%.4f, %.4f),速度为%.4f\n', Big_Objects{big_find_small_object}(4),Big_Objects{big_find_small_object}(5),smallBeamPos_l,smallBeamPos_w,L,W,V);
                             big_find_small_object = big_find_small_object + 1;
                         else
-                            big_find_small_window = big_find_small_window+1;
-                            if big_find_small_window > big_has_small_num
+                            big_find_small_window = big_find_small_window+update_unit;
+                            if big_find_small_window > big_has_small_num  || big_find_small_window < 1
                                 if ~found_object
                                     fprintf('第%d个目标定位到小波束跟踪丢失\n', big_find_small_object);
                                 end
                                 big_find_small_object = big_find_small_object + 1;
-                                big_find_small_window=1;
                             end
                         end
                     else
                         big_find_small_object = big_find_small_object+ 1;
                         fprintf('第%d个目标大波束跟踪丢失\n', big_find_small_object);
+                    end
+                    
+                    if(found_object)
+                        if(big_find_small_object < object_num )
+                            if(Big_Objects{big_find_small_object}(3) > 0)
+                                big_find_small_window = 1;%大波束定位小波束窗口序号
+                                update_unit = 1;
+                            else
+                                big_find_small_window = big_has_small_num;
+                                update_unit = -1;
+                            end
+                        end
                     end
                     
                     if(big_find_small_object > object_num)
@@ -216,9 +233,15 @@ for i = 1:length(t)
                         Small_Scan_Window_l = cell(1,object_num);
                         Small_Scan_Window_w = cell(1,object_num);
                         Tracking_Objects = cell(1, object_num);
+                        small_tracking_status = zeros(1, object_num);%0表示没发现目标，1表示成功跟踪，2表示跟丢了
+                        small_tracking_continue = 0;
                     end
+                    
+                    
+                    
                 else
                     if(small_beam_track_flag)
+                        
                         if ~isempty(Small_Objects{small_track_object})
                             if(small_track_ing_flag)
                                 fprintf('获取小波束跟踪扫描窗\n');
@@ -241,6 +264,7 @@ for i = 1:length(t)
                             fprintf('当前理论物体运动方位(%.4f,%.4f)，理论小波束方位(%d,%d)\n',R0l(i),R0w(i),small_l, small_w);
                             [hasObject, L, W, V] = smallBeamFindObject(Small_Scan_Window_l{small_track_object}(small_track_window), Small_Scan_Window_w{small_track_object}(small_track_window), map, small_beam, map_l, map_w);
                             if(hasObject)
+                                small_tracking_status(small_track_object) = 1;
                                 fprintf('小波束(%d,%d)发现目标(%.4f, %.4f),速度为%.4f...当前时间%.4f\n',Small_Scan_Window_l{small_track_object}(small_track_window),Small_Scan_Window_w{small_track_object}(small_track_window),L,W,V,i*T1);
                                 Tracking_Objects{small_track_object} = [L W V Small_Scan_Window_l{small_track_object}(small_track_window) Small_Scan_Window_w{small_track_object}(small_track_window)];
                                 Result{small_track_object} = [Result{small_track_object}; L W V 1 Small_Scan_Window_l{small_track_object}(small_track_window) Small_Scan_Window_w{small_track_object}(small_track_window)];
@@ -249,20 +273,29 @@ for i = 1:length(t)
                                 small_track_window = small_track_window + 1;
                                 if(small_track_window > t_window_num)
                                     small_track_window = 1;
+                                    small_tracking_status(small_track_object) = 2;
                                     fprintf('小波束目标跟踪丢失，跟踪下一个目标\n');
                                     small_track_object = small_track_object + 1;
                                 end
                             end
                         else
                             small_track_object=small_track_object+1;
-                        end
+                        end                      
+                        
                         
                         if(small_track_object > object_num)
-                            if (~isempty(Tracking_Objects))
+                            for p =1 : object_num
+                                if(small_tracking_status(p) == 1)
+                                    small_tracking_continue = 1;
+                                end
+                            end
+                            
+                            if (small_tracking_continue)
                                 small_track_object=1;
                                 small_track_ing_flag = 1;
                                 small_track_window = 1;
                                 Small_Objects = Tracking_Objects;
+                                small_tracking_continue = 0;
                             else
                                 small_beam_track_flag = 0;
                                 track_flag = 0;
@@ -280,8 +313,8 @@ end
 TRACK_L = Result{1}(:,1);
 TRACK_W = Result{1}(:,2);
 
- figure;
- plot(PREL,PREW);%理论曲线
- hold on
- plot(TRACK_L,TRACK_W,'r*');
- hold on
+figure;
+plot(PREL,PREW);%理论曲线
+hold on
+plot(TRACK_L,TRACK_W,'r*');
+hold on
