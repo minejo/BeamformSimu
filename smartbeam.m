@@ -2,7 +2,7 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 %智能扫描方案
-function [TRACK_L,TRACK_W,Global_count] = smartbeam(map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
+function [TRACK_L,TRACK_W,Global_count] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
 %%
 %场景模型设置
 %map_length = 160;%探测区域长度
@@ -16,7 +16,8 @@ small_beam = 1; %小波束正方形边长
 big_has_small_num = ceil(big_beam/small_beam); %大波束内包含的小波束个数
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
 %allow_T = 0.4*T_b; %跟踪扫描时全局容忍空白时间
-t = 0:T1:12*T_b;
+
+t = 0:T1:time_num*T_b;
 num_l = map_length / big_beam; %大波束横轴扫描次数
 num_w = map_width / big_beam;%大波束纵轴扫描次数
 %%
@@ -158,7 +159,7 @@ for i = 1:length(t)
                 if(hasObject)
                     fprintf('大波束(%d,%d)跟踪时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l,beamPos_w, L,W,V);
                     Big_Objects{big_beam_track_object} = [L W V beamPos_l beamPos_w map_index_w];
-                    Result{big_beam_track_object} = [Result{big_beam_track_object};L W V  0 beamPos_l beamPos_w];%第4列表示后面跟的是大波束参数还是小波束参数，0为大波束，1为小波束
+                   % Result{big_beam_track_object} = [Result{big_beam_track_object};L W V  0 beamPos_l beamPos_w];%第4列表示后面跟的是大波束参数还是小波束参数，0为大波束，1为小波束
                     big_beam_track_object= big_beam_track_object + 1;
                     big_beam_track_window = 1;
                 else

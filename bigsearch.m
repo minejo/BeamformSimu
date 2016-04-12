@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-function [Track_l ,Track_w] = bigsearch(map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
+function [Track_l ,Track_w,T_b] = bigsearch(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
 %%
 %场景模型设置
 %map_length = 80;%探测区域长度
@@ -13,7 +13,7 @@ big_beam = 8; %大波束的正方形边长
 small_beam = 2; %小波束正方形边长
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
 %allow_T = 0.8*T_b; %跟踪扫描时全局容忍空白时间
-t = 0:T1:12*T_b;
+t = 0:T1:time_num*T_b;
 num_l = map_length / big_beam; %大波束横轴扫描次数
 num_w = map_width / big_beam;%大波束纵轴扫描次数
 %%
@@ -131,9 +131,11 @@ for i = 1: length(t)
                         fprintf(2,'大致宽波束跟踪,横向趋势%d\n',horizental_trend);
                         [scan_window_l ,scan_window_w] = getScanWindow(Objects(big_beam_track_object,4), Objects(big_beam_track_object,5),max_big_pos_l,max_big_pos_w,map_w,big_beam,Objects(big_beam_track_object,3),T1,0.5*T_b,horizental_trend);
                         first_track = 0;
+                        big_tracking_flag = 0;
                     else
                         fprintf(2,'宽波束跟踪,横向趋势%d\n',horizental_trend);
                         [scan_window_l ,scan_window_w] = getScanWindow(Objects(big_beam_track_object,4), Objects(big_beam_track_object,5),max_big_pos_l,max_big_pos_w,map_w,big_beam,Objects(big_beam_track_object,3),T1,0,horizental_trend);
+                        big_tracking_flag = 0;
                     end
                 end
                 
@@ -169,6 +171,7 @@ for i = 1: length(t)
                     Result{big_beam_track_object} = [Result{big_beam_track_object};L W V  0 beamPos_l beamPos_w];%第4列表示后面跟的是大波束参数还是小波束参数，0为大波束，1为小波束
                     big_beam_track_object= big_beam_track_object + 1;
                     big_beam_track_window = 1;
+                    big_tracking_flag = 1;
                 else
                     big_beam_track_window = big_beam_track_window + 1;
                     if(big_beam_track_window > length(Big_Scan_Window_l{big_beam_track_object}))
