@@ -1,19 +1,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-function [Track_l ,Track_w] = bigscan(R0_l,v0_l,a0_l,R0_w,v0_w,a0_w)
+function [Track_l ,Track_w] = bigscan(map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w)
 %%
 %场景模型设置
-map_length = 80;%探测区域长度
-map_width = 50;%探测区域宽度
+%map_length = 80;%探测区域长度
+%map_width = 50;%探测区域宽度
 %%
 %设定波束细节
 T1 = 0.0037; %单波束驻留时间，波束切换时间不考虑
 
-big_beam = 5; %大波束的正方形边长
+big_beam = 8; %大波束的正方形边长
 T_b = map_length * map_width / (big_beam * big_beam)*T1; %大波束扫描整个区域需要的时间
 
-t = 0:T1:8*T_b;
+t = 0:T1:12*T_b;
 num_l = map_length / big_beam; %大波束横轴扫描次数
 num_w = map_width / big_beam;%大波束纵轴扫描次数
 %%
