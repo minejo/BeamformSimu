@@ -2,7 +2,7 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 %智能扫描方案
-function [TRACK_L,TRACK_W,Global_count] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
+function [TRACK_L,TRACK_W,Global_count,PREL,PREW] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
 %%
 %场景模型设置
 %map_length = 160;%探测区域长度
@@ -356,9 +356,3 @@ for i = 1:length(t)
 end
 TRACK_L = Result{1}(:,1);
 TRACK_W = Result{1}(:,2);
-
-figure;
-plot(PREL,PREW);%理论曲线
-hold on
-plot(TRACK_L,TRACK_W,'r*');
-hold on
