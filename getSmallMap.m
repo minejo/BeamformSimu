@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Author: Chao Li %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 function small_map = getSmallMap(beam_l,beam_w,small_beam,map,map_l,map_w)
 %ªÒ»°–°≤® ¯æÿ’Û
 num_l = small_beam/map_l;

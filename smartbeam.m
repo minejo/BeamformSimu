@@ -2,7 +2,7 @@
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 %智能扫描方案
-function [TRACK_L,TRACK_W,Global_count,PREL,PREW] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
+function [TRACK_L,TRACK_W,Global_count,PREL,PREW, scan_count] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T)
 %%
 %场景模型设置
 %map_length = 160;%探测区域长度
@@ -59,6 +59,7 @@ beamPos_l = 1;%波束的位置
 Trl = [];
 Trw = [];
 Trv = [];
+scan_count = 0;%扫描到物体的次数
 big_beam_track_flag = 0; %大波束跟踪模式
 find_from_big_beam_flag = 0;
 small_beam_track_flag = 0;%小波束跟踪模式
@@ -69,6 +70,7 @@ Objects = [];%存储全局扫描得到的物体
 Global_count = 0;
 Result = {};
 for i = 1:length(t)
+    %fprintf('当前时间(smart-beam)是%.4f\n',i*T1);
     if(R0l(i)<=map_length && R0w(i) <= map_width && R0l(i)>0 && R0w(i) >0 )
         [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     else
@@ -83,6 +85,7 @@ for i = 1:length(t)
         %Objects = [];
         [hasObject, L, W, vv,map_index_w] = bigBeamFindObject(beamPos_l,beamPos_w,map,big_beam, map_l,map_w);
         if(hasObject)
+            scan_count = scan_count + 1;
             fprintf('全局扫描大波束(%d,%d)扫描时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l ,beamPos_w, L,W,vv);
             %发现目标，将相关信息存入Object数组,每行分别表示(横向距离，纵向距离，速度， 横向波束位置，纵向波束位置)
             Objects = [Objects; L W vv beamPos_l beamPos_w];
@@ -157,6 +160,7 @@ for i = 1:length(t)
                 [hasObject, L, W, V,map_index_w] = bigBeamFindObject(beamPos_l, beamPos_w,map,big_beam, map_l,map_w);
                 
                 if(hasObject)
+                    scan_count = scan_count + 1;
                     fprintf('大波束(%d,%d)跟踪时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l,beamPos_w, L,W,V);
                     Big_Objects{big_beam_track_object} = [L W V beamPos_l beamPos_w map_index_w];
                    % Result{big_beam_track_object} = [Result{big_beam_track_object};L W V  0 beamPos_l beamPos_w];%第4列表示后面跟的是大波束参数还是小波束参数，0为大波束，1为小波束
@@ -204,6 +208,7 @@ for i = 1:length(t)
                         fprintf('大波束(%d,%d)中小波束(%d,%d)中定位物体\n',Big_Objects{big_find_small_object}(4),Big_Objects{big_find_small_object}(5),smallBeamPos_l,smallBeamPos_w);
                         [hasObject, L, W, V] = smallBeamFindObject(smallBeamPos_l, smallBeamPos_w, map, small_beam, map_l, map_w);
                         if hasObject
+                            scan_count = scan_count + 1;
                             found_object = 1;
                             Small_Objects{big_find_small_object} = [L W V smallBeamPos_l smallBeamPos_w];
                             Result{big_find_small_object} = [Result{big_find_small_object}; L W V 1 smallBeamPos_l smallBeamPos_w];
@@ -291,6 +296,7 @@ for i = 1:length(t)
                             fprintf('当前理论物体运动方位(%.4f,%.4f)，理论小波束方位(%d,%d)\n',R0l(i),R0w(i),small_l, small_w);
                             [hasObject, L, W, V] = smallBeamFindObject(Small_Scan_Window_l{small_track_object}(small_track_window), Small_Scan_Window_w{small_track_object}(small_track_window), map, small_beam, map_l, map_w);
                             if(hasObject)
+                                scan_count = scan_count + 1;
                                 small_tracking_status(small_track_object) = 1;
                                 search_count = 0;
                                 temp_horizental_trend = Small_Scan_Window_l{small_track_object}(small_track_window) - pre_l_window;

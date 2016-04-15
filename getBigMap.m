@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Author: Chao Li %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 function big_map = getBigMap(beam_l,beam_w,big_beam,map,map_l,map_w)
 %»ñÈ¡´ó²¨Êø¾ØÕó
 num_l = big_beam/map_l;

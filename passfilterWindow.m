@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Author: Chao Li %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 function [scan_window_l,scan_window_w]  = passfilterWindow(window_l,min_l,max_l, window_w,min_w, max_w)
 %过滤超出边界的window position出现
 scan_window_l = [];

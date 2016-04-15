@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Author: Chao Li %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 function [ big_l,big_w,small_l,small_w ] = gettheorylocation( l,w,small_beam,big_beam,map,map_l,map_w )
 %GETTHEORYLOCATION Summary of this function goes here
 %  获取理论物体所在处

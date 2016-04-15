@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% Author: Chao Li %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-function [Track_l ,Track_w] = bigscan(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w)
+function [Track_l ,Track_w, scan_count] = bigscan(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w)
 %%
 %场景模型设置
 %map_length = 80;%探测区域长度
@@ -52,9 +52,11 @@ beamPos_l = 1;%波束的位置
 Rl = [];
 Rw = [];
 V = [];
+scan_count = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %大波束顺序扫描
 for i = 1: length(t)
+    %fprintf('当前时间(big-scan)是%.4f\n',i*T1);
     if(R0l(i)<=map_length && R0w(i) <= map_width && R0l(i)>0 && R0w(i) >0 )
         [map, RL_pre, RW_pre] = updatemap(map,R0l(i),RL_pre,R0w(i),RW_pre,v(i),map_l,map_w); %实时更新map
     end
@@ -68,6 +70,7 @@ for i = 1: length(t)
     %在单个大波束内查找有没有物体
     [hasObject, L, W, vv,map_index_w] = bigBeamFindObject(beamPos_l,beamPos_w ,map,big_beam, map_l,map_w);
     if(hasObject)
+        scan_count = scan_count + 1;
         fprintf('大波束(%d,%d)扫描时发现目标(%.4f, %.4f),速度为%.4f\n',beamPos_l ,beamPos_w,L,W,vv);
         Rl = [Rl L];
         Rw = [Rw W];

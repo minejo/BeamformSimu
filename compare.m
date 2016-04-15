@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Author: Chao Li %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 clc
 clear all
 close all
@@ -6,24 +9,24 @@ map_width = 40;%探测区域宽度
 
 %运动模型设置
 R0_l = 1; %横轴初始距离
-v0_l = 4; %横轴初始速度
-a0_l = 3; %横轴加速度
+v0_l = 13; %横轴初始速度
+a0_l = 0; %横轴加速度
 
-R0_w=30; %纵轴初始距离
-v0_w=2; %纵轴初始速度
-a0_w=-1;  %纵轴加速度
+R0_w=38; %纵轴初始距离
+v0_w=-2.5; %纵轴初始速度
+a0_w=0;  %纵轴加速度
 %T_b = 0.592;
 allow_T = 1.5;
-time_num = 30;
+time_num = 37;
 
 
 
 %智能波束方案
-[s_TRACK_L,s_TRACK_W,global_count,PREL,PREW] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T);
+[s_TRACK_L,s_TRACK_W,global_count,PREL,PREW, count_smallbeam] = smartbeam(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T);
 %大波束扫描方案
-[b_Track_l, b_Track_w] = bigscan(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w);
+[b_Track_l, b_Track_w, count_bigscan] = bigscan(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w);
 % %大波束搜索方案
-[bs_Track_l, bs_Track_w,T_b] = bigsearch(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T);
+[bs_Track_l, bs_Track_w,T_b, count_bigsearch] = bigsearch(time_num,map_length,map_width,R0_l,v0_l,a0_l,R0_w,v0_w,a0_w,allow_T);
 % 
 % %结果对比
 figure;
@@ -68,7 +71,7 @@ t9 = text(10,4,['Tracking allowable time: ', num2str(allow_T),'s']);
 set(t9,'FontName','Times New Roman','FontSize',12);
 
 %plot the small section
-h1=axes('position',[0.68 0.51 0.2 0.23]);  % set the size of the small figure  
+h1=axes('position',[0.66 0.52 0.22 0.22]);  % set the size of the small figure  
 set(h1,'FontName','Times New Roman');  
 axis(h1);
 plot(PREL,PREW);%理论曲线
@@ -78,5 +81,5 @@ hold on
 plot(bs_Track_l,bs_Track_w,'c+');
 hold on
 plot(b_Track_l,b_Track_w,'kV');
-xlim([88.5 94.5]);
-ylim([21.1 22.26]);
+ylim([35.33 36.39]);
+xlim([11.2 12.28]);
