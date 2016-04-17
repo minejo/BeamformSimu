@@ -53,22 +53,26 @@ set(t1,'FontName','Times New Roman','FontSize',12);
 t2=text(10, 18, ['Longitudinal length of detection area: ',num2str(map_width),'m']);
 set(t2,'FontName','Times New Roman','FontSize',12);
 
-t3=text(10, 16, ['Horizontal initial  distance: ',num2str(R0_l),'m']);
+t10 = text(10,16,'Wide beam width: 8m, Small beam width: 1m');
+set(t10,'FontName','Times New Roman','FontSize',12);
+
+t3=text(10, 14, ['Horizontal initial  distance: ',num2str(R0_l),'m']);
 set(t3,'FontName','Times New Roman','FontSize',12);
-t4=text(10, 14, ['Horizontal initial  velocity: ',num2str(v0_l),'m/s']);
+t4=text(10, 12, ['Horizontal initial  velocity: ',num2str(v0_l),'m/s']);
 set(t4,'FontName','Times New Roman','FontSize',12);
-t5=text(10, 12, ['Horizontal  acceleration: ',num2str(a0_l),'m/s^2']);
+t5=text(10, 10, ['Horizontal  acceleration: ',num2str(a0_l),'m/s^2']);
 set(t5,'FontName','Times New Roman','FontSize',12);
 
-t6=text(10, 10, ['Longitudinal initial distance: ',num2str(R0_w),'m']);
+t6=text(10, 8, ['Longitudinal initial distance: ',num2str(R0_w),'m']);
 set(t6,'FontName','Times New Roman','FontSize',12);
-t7=text(10, 8, ['Longitudinal initial velocity: ',num2str(v0_w),'m/s']);
+t7=text(10, 6, ['Longitudinal initial velocity: ',num2str(v0_w),'m/s']);
 set(t7,'FontName','Times New Roman','FontSize',12);
-t8=text(10, 6, ['Longitudinal acceleration: ',num2str(a0_w),'m/s^2']);
+t8=text(10, 4, ['Longitudinal acceleration: ',num2str(a0_w),'m/s^2']);
 set(t8,'FontName','Times New Roman','FontSize',12);
 
-t9 = text(10,4,['Tracking allowable time: ', num2str(allow_T),'s']);
+t9 = text(10,2,['Tracking allowable time: ', num2str(allow_T),'s']);
 set(t9,'FontName','Times New Roman','FontSize',12);
+
 
 %plot the small section
 h1=axes('position',[0.66 0.52 0.22 0.22]);  % set the size of the small figure  

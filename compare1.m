@@ -53,21 +53,24 @@ set(t1,'FontName','Times New Roman','FontSize',12);
 t2=text(75, 26, ['Longitudinal length of detection area: ',num2str(map_width),'m']);
 set(t2,'FontName','Times New Roman','FontSize',12);
 
-t3=text(75, 24, ['Horizontal initial  distance: ',num2str(R0_l),'m']);
+t10 = text(75,24,'Wide beam width: 8m, Small beam width: 1m');
+set(t10,'FontName','Times New Roman','FontSize',12);
+
+t3=text(75, 22, ['Horizontal initial  distance: ',num2str(R0_l),'m']);
 set(t3,'FontName','Times New Roman','FontSize',12);
-t4=text(75, 22, ['Horizontal initial  velocity: ',num2str(v0_l),'m/s']);
+t4=text(75, 20, ['Horizontal initial  velocity: ',num2str(v0_l),'m/s']);
 set(t4,'FontName','Times New Roman','FontSize',12);
-t5=text(75, 20, ['Horizontal  acceleration: ',num2str(a0_l),'m/s^2']);
+t5=text(75, 18, ['Horizontal  acceleration: ',num2str(a0_l),'m/s^2']);
 set(t5,'FontName','Times New Roman','FontSize',12);
 
-t6=text(75, 18, ['Longitudinal initial distance: ',num2str(R0_w),'m']);
+t6=text(75, 16, ['Longitudinal initial distance: ',num2str(R0_w),'m']);
 set(t6,'FontName','Times New Roman','FontSize',12);
-t7=text(75, 16, ['Longitudinal initial velocity: ',num2str(v0_w),'m/s']);
+t7=text(75, 14, ['Longitudinal initial velocity: ',num2str(v0_w),'m/s']);
 set(t7,'FontName','Times New Roman','FontSize',12);
-t8=text(75, 14, ['Longitudinal acceleration: ',num2str(a0_w),'m/s^2']);
+t8=text(75, 12, ['Longitudinal acceleration: ',num2str(a0_w),'m/s^2']);
 set(t8,'FontName','Times New Roman','FontSize',12);
 
-t9 = text(75,12,['Tracking allowable time: ', num2str(allow_T),'s']);
+t9 = text(75,10,['Tracking allowable time: ', num2str(allow_T),'s']);
 set(t9,'FontName','Times New Roman','FontSize',12);
 
 
